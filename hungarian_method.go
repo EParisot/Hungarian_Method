@@ -6,13 +6,16 @@ import (
 )
 
 func show_assignments(costs, stars [][]int, N int) {
+	total_cost := 0
 	for i := 0; i < N; i++ {
 		for j := 0; j < N; j++ {
 			if stars[i][j] == 1 {
+				total_cost += costs[i][j]
 				fmt.Printf("Agent %d -> Task %d : cost %d\n", i, j, costs[i][j])
 			}
 		}
 	}
+	fmt.Printf("\nTotal cost %d\n", total_cost)
 }
 
 func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered_tasks []int, assignments, N int) {
@@ -49,7 +52,7 @@ func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered
 			fmt.Printf("        ")
 		}
 	}
-	fmt.Printf("\n")
+	fmt.Printf("\n\n")
 }
 
 func clean(arr *[][]int, N int) {
@@ -186,7 +189,7 @@ type HCell struct {
 }
 
 func main() {
-	debug := false
+	debug := true
 
 	search_start := time.Now()
 
@@ -215,7 +218,7 @@ func main() {
 		{7, 7, 7, 9, 7, 11, 9, 12},
 	}*/
 
-	/*costs := [][]int{
+	costs := [][]int{
 		{1, 3, 5, 4, 2, 2, 8, 9, 11, 11, 14},
 		{1, 3, 5, 4, 2, 2, 8, 9, 11, 11, 14},
 		{5, 1, 1, 2, 6, 6, 4, 5, 7, 7, 10},
@@ -227,9 +230,9 @@ func main() {
 		{4, 6, 6, 5, 5, 5, 9, 10, 12, 12, 15},
 		{7, 7, 5, 4, 8, 8, 6, 7, 9, 9, 12},
 		{7, 7, 5, 4, 8, 8, 6, 7, 9, 9, 12},
-	}*/
+	}
 
-	costs := [][]int{
+	/*costs := [][]int{
 		{1, 3, 3, 6, 4, 99, 5, 9, 7},
 		{2, 4, 4, 5, 7, 5, 6, 6, 8},
 		{2, 4, 4, 5, 7, 5, 6, 6, 8},
@@ -239,9 +242,11 @@ func main() {
 		{4, 6, 6, 9, 9, 7, 8, 10, 10},
 		{5, 99, 7, 8, 99, 99, 99, 99, 99},
 		{6, 99, 8, 7, 99, 99, 99, 99, 99},
-	}
+	}*/
 
 	N := len(costs)
+
+	step := 0
 
 	// keep track of original values
 	original_costs := make([][]int, N)
@@ -270,7 +275,7 @@ func main() {
 
 	// debug cost array
 	if debug {
-		debug_array(0, costs, stars, primes, covered_agents, covered_tasks, 0, N)
+		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, 0, N)
 	}
 
 	// STEP 1
@@ -287,11 +292,12 @@ func main() {
 		}
 	}
 
+	step++
 	// find perfect assignments
 	assignments := find_assignments(&costs, &stars, N)
 	// debug cost array
 	if debug {
-		debug_array(1, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 	}
 	if assignments == N {
 		return
@@ -312,6 +318,7 @@ func main() {
 		}
 	}
 
+	step++
 	// find perfect assignments
 	assignments = find_assignments(&costs, &stars, N)
 	// debug cost array
@@ -346,12 +353,12 @@ func main() {
 								curr_node := HCell{x: j, y: i}
 								path := []HCell{curr_node}
 								for {
-									// check if column has assigned agent
+									// check if column has assigned agent, add to path
 									agent := task_assigned(stars, curr_node.x, N)
 									if agent != -1 {
 										curr_node = HCell{x: curr_node.x, y: agent}
 										path = append(path, curr_node)
-										// check if row has primed zero
+										// check if row has primed zero, add to path
 										task = -1
 										for j := 0; j < N; j++ {
 											if primes[agent][j] == 1 {
@@ -406,10 +413,11 @@ func main() {
 				continue
 			}
 
+			step++
 			assignments = get_assignments(stars, N)
 			// debug cost array
 			if debug {
-				debug_array(3, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 			}
 
 			if assignments == N {
@@ -428,7 +436,7 @@ func main() {
 					}
 				}
 			}
-			// add it to coverings interserctions and substract it to uncovered values
+			// add minimum uncovered value to coverings interserctions and substract it from uncovered values
 			for i := 0; i < N; i++ {
 				for j := 0; j < N; j++ {
 					if covered_agents[i] == 1 && covered_tasks[j] == 1 {
@@ -439,21 +447,26 @@ func main() {
 				}
 			}
 
+			step++
 			clean_all(&stars, &primes, &covered_agents, &covered_tasks, N)
 			// search assignments
 			assignments = find_assignments(&costs, &stars, N)
 			if debug {
-				debug_array(4, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 			}
 			if assignments == N {
 				break
+			} else {
+				step -= 2
 			}
 		}
 	}
 
-	fmt.Printf("\nElapsed time: %d us\n", time.Since(search_start).Microseconds())
+	elapsed := time.Since(search_start).Microseconds()
 
 	if assignments == N {
+		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 		show_assignments(original_costs, stars, N)
 	}
+	fmt.Printf("\nElapsed time: %d us\n", elapsed)
 }
