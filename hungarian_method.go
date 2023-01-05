@@ -1,13 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"time"
 )
 
 const DEBUG = false
 
-func show_assignments(costs, stars [][]int, N int) {
+func show_assignments(costs, stars [][]int, N int) int {
 	total_cost := 0
 	for i := 0; i < N; i++ {
 		for j := 0; j < N; j++ {
@@ -18,6 +20,7 @@ func show_assignments(costs, stars [][]int, N int) {
 		}
 	}
 	fmt.Printf("\nTotal cost %d\n", total_cost)
+	return total_cost
 }
 
 func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered_tasks []int, assignments, N int) {
@@ -76,7 +79,7 @@ func clean_all(stars, primes *[][]int, covered_agents, covered_tasks *[]int, N i
 	}
 }
 
-func task_assigned(arr [][]int, j, N int) int {
+func task_in(arr [][]int, j, N int) int {
 	for i := 0; i < N; i++ {
 		if arr[i][j] == 1 {
 			return i
@@ -85,21 +88,13 @@ func task_assigned(arr [][]int, j, N int) int {
 	return -1
 }
 
-func agent_assigned(arr [][]int, i, N int) int {
+func agent_in(arr [][]int, i, N int) int {
 	for j := 0; j < N; j++ {
 		if arr[i][j] == 1 {
 			return j
 		}
 	}
 	return -1
-}
-
-func sum(array []int) int {
-	result := 0
-	for _, v := range array {
-		result += v
-	}
-	return result
 }
 
 func find_assignments(costs, stars *[][]int, N int) int {
@@ -190,63 +185,29 @@ type HCell struct {
 	y int
 }
 
-func main() {
+func teardown(search_start time.Time, step int, original_costs, stars, primes [][]int, covered_agents, covered_tasks []int, assignments, N int) int {
+	elapsed := time.Since(search_start).Microseconds()
+	total_cost := 0
+
+	if assignments == N {
+		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+		total_cost = show_assignments(original_costs, stars, N)
+	}
+	fmt.Printf("\nElapsed time: %d us\n", elapsed)
+	return total_cost
+}
+
+func hungarian_method(costs [][]int) (int, error) {
 
 	search_start := time.Now()
 
-	/*costs := [][]int{
-		{0, 98, 95, 85},
-		{0, 2, 4, 2},
-		{97, 0, 0, 2},
-		{0, 0, 2, 0},
-	}*/
-
-	/*costs := [][]int{
-		{10, 12, 19, 11},
-		{5, 10, 7, 8},
-		{12, 14, 13, 11},
-		{8, 15, 11, 9},
-	}*/
-
-	/*costs := [][]int{
-		{1, 1, 1, 5, 3, 7, 5, 8},
-		{5, 5, 5, 1, 7, 3, 9, 10},
-		{2, 2, 2, 4, 4, 6, 6, 7},
-		{2, 2, 2, 4, 4, 6, 6, 7},
-		{4, 4, 4, 2, 6, 4, 8, 11},
-		{5, 5, 5, 3, 7, 5, 9, 12},
-		{6, 6, 6, 8, 8, 10, 10, 13},
-		{7, 7, 7, 9, 7, 11, 9, 12},
-	}*/
-
-	costs := [][]int{
-		{1, 3, 5, 4, 2, 2, 8, 9, 11, 11, 14},
-		{1, 3, 5, 4, 2, 2, 8, 9, 11, 11, 14},
-		{5, 1, 1, 2, 6, 6, 4, 5, 7, 7, 10},
-		{8, 6, 2, 1, 9, 9, 3, 4, 6, 10, 11},
-		{3, 7, 7, 6, 2, 2, 10, 11, 13, 13, 16},
-		{3, 3, 3, 2, 4, 4, 6, 7, 9, 9, 12},
-		{9, 7, 3, 2, 10, 10, 4, 3, 5, 9, 10},
-		{4, 6, 6, 5, 5, 5, 9, 10, 12, 12, 15},
-		{4, 6, 6, 5, 5, 5, 9, 10, 12, 12, 15},
-		{7, 7, 5, 4, 8, 8, 6, 7, 9, 9, 12},
-		{7, 7, 5, 4, 8, 8, 6, 7, 9, 9, 12},
-	}
-
-	/*costs := [][]int{
-		{1, 3, 3, 6, 4, 99, 5, 9, 7},
-		{2, 4, 4, 5, 7, 5, 6, 6, 8},
-		{2, 4, 4, 5, 7, 5, 6, 6, 8},
-		{3, 99, 7, 4, 99, 99, 99, 99, 99},
-		{3, 99, 5, 10, 99, 99, 99, 99, 99},
-		{4, 6, 6, 9, 9, 7, 8, 10, 10},
-		{4, 6, 6, 9, 9, 7, 8, 10, 10},
-		{5, 99, 7, 8, 99, 99, 99, 99, 99},
-		{6, 99, 8, 7, 99, 99, 99, 99, 99},
-	}*/
-
+	// check squared
 	N := len(costs)
-
+	for _, l := range costs {
+		if len(l) != N {
+			return 0, errors.New("ERROR: Unsquared Input Matrix")
+		}
+	}
 	step := 0
 
 	// keep track of original values
@@ -301,7 +262,7 @@ func main() {
 		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 	}
 	if assignments == N {
-		return
+		return teardown(search_start, step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N), nil
 	}
 	clean(&stars, N)
 
@@ -333,7 +294,7 @@ func main() {
 		for {
 			repeat_previous_step := false
 			for j := 0; j < N; j++ {
-				if task_assigned(stars, j, N) != -1 {
+				if task_in(stars, j, N) != -1 {
 					covered_tasks[j] = 1
 				}
 			}
@@ -345,7 +306,7 @@ func main() {
 					for j := 0; j < N; j++ {
 						if covered_tasks[j] == 0 && covered_agents[i] == 0 && costs[i][j] == 0 && primes[i][j] == 0 && stars[i][j] == 0 {
 							primes[i][j] = 1
-							task := agent_assigned(stars, i, N)
+							task := agent_in(stars, i, N)
 							if task != -1 {
 								covered_tasks[task] = 0
 								covered_agents[i] = 1
@@ -355,24 +316,18 @@ func main() {
 								path := []HCell{curr_node}
 								for {
 									// check if column has assigned agent, add to path
-									agent := task_assigned(stars, curr_node.x, N)
+									agent := task_in(stars, curr_node.x, N)
 									if agent != -1 {
 										curr_node = HCell{x: curr_node.x, y: agent}
 										path = append(path, curr_node)
 										// check if row has primed zero, add to path
-										task = -1
-										for j := 0; j < N; j++ {
-											if primes[agent][j] == 1 {
-												task = j
-												break
-											}
-										}
+										task = agent_in(primes, agent, N)
 										if task != -1 {
 											curr_node = HCell{x: task, y: agent}
 											path = append(path, curr_node)
 										} else {
-											fmt.Printf("ERROR: Prime not found in row: %d\n", agent)
-											return
+											err := fmt.Sprintf("ERROR: Prime not found in row: %d\n", agent)
+											return 0, errors.New(err)
 										}
 									} else {
 										break
@@ -463,11 +418,26 @@ func main() {
 		}
 	}
 
-	elapsed := time.Since(search_start).Microseconds()
+	return teardown(search_start, step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N), nil
+}
 
-	if assignments == N {
-		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N)
-		show_assignments(original_costs, stars, N)
+func main() {
+
+	// input costs array: Agents \ Tasks, must be squared
+	costs := [][]int{
+		{1, 3, 3, 6, 4, 99, 5, 9, 7},
+		{2, 4, 4, 5, 7, 5, 6, 6, 8},
+		{2, 4, 4, 5, 7, 5, 6, 6, 8},
+		{3, 99, 7, 4, 99, 99, 99, 99, 99},
+		{3, 99, 5, 10, 99, 99, 99, 99, 99},
+		{4, 6, 6, 9, 9, 7, 8, 10, 10},
+		{4, 6, 6, 9, 9, 7, 8, 10, 10},
+		{5, 99, 7, 8, 99, 99, 99, 99, 99},
+		{6, 99, 8, 7, 99, 99, 99, 99, 99},
 	}
-	fmt.Printf("\nElapsed time: %d us\n", elapsed)
+
+	_, err := hungarian_method(costs)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
