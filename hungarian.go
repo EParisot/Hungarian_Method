@@ -322,7 +322,6 @@ func main() {
 	if assignments != N {
 		// STEP 3
 		// cover every assigned column
-		n := 0
 		for {
 			repeat_previous_step := false
 			for j := 0; j < N; j++ {
@@ -445,11 +444,6 @@ func main() {
 			assignments = find_assignments(&costs, &stars, N)
 			if debug {
 				debug_array(4, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
-			}
-			if n > 1 {
-				return
-			} else {
-				n++
 			}
 			if assignments == N {
 				break
