@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const DEBUG = false
+
 func show_assignments(costs, stars [][]int, N int) {
 	total_cost := 0
 	for i := 0; i < N; i++ {
@@ -189,7 +191,6 @@ type HCell struct {
 }
 
 func main() {
-	debug := true
 
 	search_start := time.Now()
 
@@ -274,7 +275,7 @@ func main() {
 	}
 
 	// debug cost array
-	if debug {
+	if DEBUG {
 		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, 0, N)
 	}
 
@@ -296,7 +297,7 @@ func main() {
 	// find perfect assignments
 	assignments := find_assignments(&costs, &stars, N)
 	// debug cost array
-	if debug {
+	if DEBUG {
 		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 	}
 	if assignments == N {
@@ -322,7 +323,7 @@ func main() {
 	// find perfect assignments
 	assignments = find_assignments(&costs, &stars, N)
 	// debug cost array
-	if debug {
+	if DEBUG {
 		debug_array(2, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 	}
 
@@ -416,7 +417,7 @@ func main() {
 			step++
 			assignments = get_assignments(stars, N)
 			// debug cost array
-			if debug {
+			if DEBUG {
 				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 			}
 
@@ -451,7 +452,7 @@ func main() {
 			clean_all(&stars, &primes, &covered_agents, &covered_tasks, N)
 			// search assignments
 			assignments = find_assignments(&costs, &stars, N)
-			if debug {
+			if DEBUG {
 				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
 			}
 			if assignments == N {
