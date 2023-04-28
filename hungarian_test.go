@@ -119,12 +119,13 @@ func TestUnsquared2(t *testing.T) {
 
 func TestUnsquared3(t *testing.T) {
 	costs := [][]int{
-		{97, 98, 95, 85},
-		{3, 2, 4, 2},
-		{97, 98, 6, 92},
-		{100, 8, 2, 6, 12},
+		{18, 11, 16, 20},
+		{14, 19, 26, 18},
+		{21, 23, 35, 29},
+		{32, 27, 21, 17},
+		{16, 15, 28, 25},
 	}
-	cost := 102
+	cost := 62
 	res, err := hungarian_method(costs)
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
@@ -133,13 +134,14 @@ func TestUnsquared3(t *testing.T) {
 
 func TestUnsquared4(t *testing.T) {
 	costs := [][]int{
-		{18, 11, 16, 20},
-		{14, 19, 26, 18},
-		{21, 23, 35, 29},
-		{32, 27, 21, 17},
-		{16, 15, 28, 25},
+		{12, 4, 10, 4, 12},
+		{4, 10, 16, 14, 14},
+		{14, 16, 12, 18, 16},
+		{12, 4, 6, 8, 10},
+		{18, 6, 16, 18, 14},
+		{8, 14, 8, 12, 16},
 	}
-	cost := 62
+	cost := 32
 	res, err := hungarian_method(costs)
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)

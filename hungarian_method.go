@@ -27,7 +27,7 @@ func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered
 	// debug cost array
 	fmt.Printf("STEP %d\n\n", step)
 	fmt.Printf(" A \\ T ")
-	for j := 0; j < N; j++ {
+	for j := 0; j < M; j++ {
 		fmt.Printf("|   %-2d  ", j)
 	}
 	fmt.Printf("\n")
