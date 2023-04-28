@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"log"
 	"time"
@@ -202,11 +203,10 @@ func teardown(search_start time.Time, step int, original_costs, stars, primes []
 	return total_cost
 }
 
-func hungarian_method(costs [][]int) (int, error) {
+func hungarian_method(costs [][]int, objective string) (int, error) {
 
 	search_start := time.Now()
 
-	// check squared
 	N := len(costs)
 	M := len(costs[0])
 
@@ -217,6 +217,22 @@ func hungarian_method(costs [][]int) (int, error) {
 	for i := 0; i < N; i++ {
 		original_costs[i] = make([]int, M)
 		copy(original_costs[i], costs[i])
+	}
+
+	if objective == "maximise" {
+		max_cost := 0
+		for i := 0; i < N; i++ {
+			for j := 0; j < M; j++ {
+				if costs[i][j] > max_cost {
+					max_cost = costs[i][j]
+				}
+			}
+		}
+		for i := 0; i < N; i++ {
+			for j := 0; j < M; j++ {
+				costs[i][j] = max_cost - costs[i][j];
+			}
+		}
 	}
 
 	// utils arrays
@@ -429,6 +445,11 @@ func hungarian_method(costs [][]int) (int, error) {
 
 func main() {
 
+	var objective = flag.String("objective", "minimise", "Algorithm objective: minimise (default) or maximise")
+	flag.Parse()
+
+	fmt.Println(*objective)
+
 	// input costs array: Agents \ Tasks, must be squared
 	/*costs := [][]int{
 		{1, 3, 3, 6, 4, 99, 5, 9, 7},
@@ -440,24 +461,16 @@ func main() {
 		{4, 6, 6, 9, 9, 7, 8, 10, 10},
 		{5, 99, 7, 8, 99, 99, 99, 99, 99},
 		{6, 99, 8, 7, 99, 99, 99, 99, 99},
-	}
+	}*/
+
 	costs := [][]int{
 		{4, 6, 3, 8},
 		{7, 5, 12, 6},
 		{3, 6, 9, 2},
 		{1000, 5, 7, 4},
-	}*/
-
-	costs := [][]int{
-		{12, 4, 14, 12},
-		{4, 10, 16, 4},
-		{10, 16, 12, 6},
-		{4, 14, 18, 8},
-		{12, 14, 16, 10},
 	}
 
-
-	_, err := hungarian_method(costs)
+	_, err := hungarian_method(costs, *objective)
 	if err != nil {
 		log.Fatal(err)
 	}

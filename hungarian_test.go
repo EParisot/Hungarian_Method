@@ -12,7 +12,7 @@ func TestEasy(t *testing.T) {
 		{0, 0, 2, 0},
 	}
 	cost := 2
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -26,7 +26,7 @@ func TestEasy2(t *testing.T) {
 		{8, 15, 11, 9},
 	}
 	cost := 38
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -44,7 +44,7 @@ func TestMedium(t *testing.T) {
 		{7, 7, 7, 9, 7, 11, 9, 12},
 	}
 	cost := 37
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -65,7 +65,7 @@ func TestHard(t *testing.T) {
 		{7, 7, 5, 4, 8, 8, 6, 7, 9, 9, 12},
 	}
 	cost := 53
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -84,7 +84,7 @@ func TestHard2(t *testing.T) {
 		{6, 99, 8, 7, 99, 99, 99, 99, 99},
 	}
 	cost := 142
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -96,7 +96,7 @@ func TestUnsquared(t *testing.T) {
 		{5, 4, 1},
 	}
 	cost := 6
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -111,7 +111,7 @@ func TestUnsquared2(t *testing.T) {
 		{16, 20, 2, 30},
 	}
 	cost := 7
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -126,7 +126,7 @@ func TestUnsquared3(t *testing.T) {
 		{16, 15, 28, 25},
 	}
 	cost := 62
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -142,7 +142,7 @@ func TestUnsquared4(t *testing.T) {
 		{8, 14, 8, 12, 16},
 	}
 	cost := 32
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -156,7 +156,7 @@ func TestUnsquared5(t *testing.T) {
 		{12, 4, 6, 8, 10},
 	}
 	cost := 24
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
@@ -171,7 +171,7 @@ func TestUnsquared6(t *testing.T) {
 		{12, 14, 16, 10},
 	}
 	cost := 24
-	res, err := hungarian_method(costs)
+	res, err := hungarian_method(costs, "minimise")
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
