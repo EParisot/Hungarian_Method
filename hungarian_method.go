@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const DEBUG = false
+const DEBUG = true
 
 func show_assignments(costs, stars [][]int, N int) int {
 	total_cost := 0
@@ -23,7 +23,7 @@ func show_assignments(costs, stars [][]int, N int) int {
 	return total_cost
 }
 
-func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered_tasks []int, assignments, N int) {
+func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered_tasks []int, assignments, N, M int) {
 	// debug cost array
 	fmt.Printf("STEP %d\n\n", step)
 	fmt.Printf(" A \\ T ")
@@ -33,7 +33,7 @@ func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered
 	fmt.Printf("\n")
 	for i := 0; i < N; i++ {
 		fmt.Printf("\n%-2d:\t", i)
-		for j := 0; j < N; j++ {
+		for j := 0; j < M; j++ {
 			if stars[i][j] == 1 {
 				fmt.Printf("   %-2d*  ", costs[i][j])
 			} else if primes[i][j] == 1 {
@@ -60,17 +60,17 @@ func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered
 	fmt.Printf("\n\n")
 }
 
-func clean(arr *[][]int, N int) {
+func clean(arr *[][]int, N, M int) {
 	for i := 0; i < N; i++ {
-		for j := 0; j < N; j++ {
+		for j := 0; j < M; j++ {
 			(*arr)[i][j] = 0
 		}
 	}
 }
 
-func clean_all(stars, primes *[][]int, covered_agents, covered_tasks *[]int, N int) {
+func clean_all(stars, primes *[][]int, covered_agents, covered_tasks *[]int, N, M int) {
 	for i := 0; i < N; i++ {
-		for j := 0; j < N; j++ {
+		for j := 0; j < M; j++ {
 			(*stars)[i][j] = 0
 			(*primes)[i][j] = 0
 		}
@@ -97,16 +97,18 @@ func agent_in(arr [][]int, i, N int) int {
 	return -1
 }
 
-func find_assignments(costs, stars *[][]int, N int) int {
-	clean(stars, N)
+func find_assignments(costs, stars *[][]int, N, M int) int {
+	clean(stars, N, M)
 
 	assignments := 0
 
 	covered_agents := make([]int, N)
-	covered_tasks := make([]int, N)
+	covered_tasks := make([]int, M)
 	for i := 0; i < N; i++ {
 		covered_agents[i] = 0
-		covered_tasks[i] = 0
+	}
+	for j := 0; j < M; j++ {
+		covered_tasks[j] = 0
 	}
 
 	// repeat until every zero is covered
@@ -117,7 +119,7 @@ func find_assignments(costs, stars *[][]int, N int) int {
 		// find row or column with non null minimum number of zeros
 		for i := 0; i < N; i++ {
 			nb_of_zeros := 0
-			for j := 0; j < N; j++ {
+			for j := 0; j < M; j++ {
 				if covered_agents[i] == 0 && covered_tasks[j] == 0 && (*costs)[i][j] == 0 {
 					nb_of_zeros++
 				}
@@ -127,7 +129,7 @@ func find_assignments(costs, stars *[][]int, N int) int {
 				best_row = i
 			}
 		}
-		for j := 0; j < N; j++ {
+		for j := 0; j < M; j++ {
 			nb_of_zeros := 0
 			for i := 0; i < N; i++ {
 				if covered_agents[i] == 0 && covered_tasks[j] == 0 && (*costs)[i][j] == 0 {
@@ -151,7 +153,7 @@ func find_assignments(costs, stars *[][]int, N int) int {
 				}
 			}
 		} else if best_row != -1 {
-			for j := 0; j < N; j++ {
+			for j := 0; j < M; j++ {
 				if covered_agents[best_row] == 0 && covered_tasks[j] == 0 && (*costs)[best_row][j] == 0 {
 					(*stars)[best_row][j] = 1
 					covered_agents[best_row] = 1
@@ -168,10 +170,10 @@ func find_assignments(costs, stars *[][]int, N int) int {
 	return assignments
 }
 
-func get_assignments(stars [][]int, N int) int {
+func get_assignments(stars [][]int, N, M int) int {
 	assignments := 0
 	for i := 0; i < N; i++ {
-		for j := 0; j < N; j++ {
+		for j := 0; j < M; j++ {
 			if stars[i][j] == 1 {
 				assignments++
 			}
@@ -185,12 +187,15 @@ type HCell struct {
 	y int
 }
 
-func teardown(search_start time.Time, step int, original_costs, stars, primes [][]int, covered_agents, covered_tasks []int, assignments, N int) int {
+func teardown(search_start time.Time, step int, original_costs, stars, primes [][]int, covered_agents, covered_tasks []int, assignments, N, M int) int {
 	elapsed := time.Since(search_start).Microseconds()
 	total_cost := 0
 
-	if assignments == N {
-		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+	if N <= M && assignments == N {
+		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
+		total_cost = show_assignments(original_costs, stars, N)
+	} else if (M < N && assignments == M) {
+		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
 		total_cost = show_assignments(original_costs, stars, N)
 	}
 	fmt.Printf("\nElapsed time: %d us\n", elapsed)
@@ -203,17 +208,14 @@ func hungarian_method(costs [][]int) (int, error) {
 
 	// check squared
 	N := len(costs)
-	for _, l := range costs {
-		if len(l) != N {
-			return 0, errors.New("ERROR: Unsquared Input Matrix")
-		}
-	}
+	M := len(costs[0])
+
 	step := 0
 
 	// keep track of original values
 	original_costs := make([][]int, N)
 	for i := 0; i < N; i++ {
-		original_costs[i] = make([]int, N)
+		original_costs[i] = make([]int, M)
 		copy(original_costs[i], costs[i])
 	}
 
@@ -221,9 +223,9 @@ func hungarian_method(costs [][]int) (int, error) {
 	stars := make([][]int, N)
 	primes := make([][]int, N)
 	for i := 0; i < N; i++ {
-		stars[i] = make([]int, N)
-		primes[i] = make([]int, N)
-		for j := 0; j < N; j++ {
+		stars[i] = make([]int, M)
+		primes[i] = make([]int, M)
+		for j := 0; j < M; j++ {
 			stars[i][j] = 0
 			primes[i][j] = 0
 		}
@@ -237,73 +239,77 @@ func hungarian_method(costs [][]int) (int, error) {
 
 	// debug cost array
 	if DEBUG {
-		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, 0, N)
+		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, 0, N, M)
 	}
 
 	// STEP 1
 	// reduce every row by its minimum
-	for i := 0; i < N; i++ {
-		min_cost := 10000000
-		for j := 0; j < N; j++ {
-			if costs[i][j] < min_cost {
-				min_cost = costs[i][j]
+	if N <= M {
+		for i := 0; i < N; i++ {
+			min_cost := 10000000
+			for j := 0; j < M; j++ {
+				if costs[i][j] < min_cost {
+					min_cost = costs[i][j]
+				}
 			}
-		}
-		for j := 0; j < N; j++ {
-			costs[i][j] -= min_cost
+			for j := 0; j < M; j++ {
+				costs[i][j] -= min_cost
+			}
 		}
 	}
 
 	step++
 	// find perfect assignments
-	assignments := find_assignments(&costs, &stars, N)
+	assignments := find_assignments(&costs, &stars, N, M)
 	// debug cost array
 	if DEBUG {
-		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+		debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
 	}
-	if assignments == N {
-		return teardown(search_start, step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N), nil
+	if (N <= M && assignments == N) || (M < N && assignments == M) {
+		return teardown(search_start, step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M), nil
 	}
-	clean(&stars, N)
+	clean(&stars, N, M)
 
 	// STEP 2
 	// reduce every column by its minimum
-	for j := 0; j < N; j++ {
-		min_cost := 10000000
-		for i := 0; i < N; i++ {
-			if costs[i][j] < min_cost {
-				min_cost = costs[i][j]
+	if N >= M {
+		for j := 0; j < M; j++ {
+			min_cost := 10000000
+			for i := 0; i < N; i++ {
+				if costs[i][j] < min_cost {
+					min_cost = costs[i][j]
+				}
+			}
+			for i := 0; i < N; i++ {
+				costs[i][j] -= min_cost
 			}
 		}
-		for i := 0; i < N; i++ {
-			costs[i][j] -= min_cost
-		}
 	}
-
+	
 	step++
 	// find perfect assignments
-	assignments = find_assignments(&costs, &stars, N)
+	assignments = find_assignments(&costs, &stars, N, M)
 	// debug cost array
 	if DEBUG {
-		debug_array(2, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+		debug_array(2, costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
 	}
 
-	if assignments != N {
+	if (N <= M && assignments != N) || (M < N && assignments != M) {
 		// STEP 3
 		// cover every assigned column
 		for {
 			repeat_previous_step := false
-			for j := 0; j < N; j++ {
+			for j := 0; j < M; j++ {
 				if task_in(stars, j, N) != -1 {
 					covered_tasks[j] = 1
 				}
 			}
 			// while there is uncovered zeroes, for each one, prime it, if row contains assigned zero, uncover its column and cover the current row
 			count := 0
-			for count < N*N {
+			for count < N*M {
 				count = 0
 				for i := 0; i < N; i++ {
-					for j := 0; j < N; j++ {
+					for j := 0; j < M; j++ {
 						if covered_tasks[j] == 0 && covered_agents[i] == 0 && costs[i][j] == 0 && primes[i][j] == 0 && stars[i][j] == 0 {
 							primes[i][j] = 1
 							task := agent_in(stars, i, N)
@@ -348,7 +354,7 @@ func hungarian_method(costs [][]int) (int, error) {
 									covered_agents[i] = 0
 									covered_tasks[i] = 0
 								}
-								clean(&primes, N)
+								clean(&primes, N, M)
 								repeat_previous_step = true
 								break
 							}
@@ -370,13 +376,13 @@ func hungarian_method(costs [][]int) (int, error) {
 			}
 
 			step++
-			assignments = get_assignments(stars, N)
+			assignments = get_assignments(stars, N, M)
 			// debug cost array
 			if DEBUG {
-				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
 			}
 
-			if assignments == N {
+			if (N <= M && assignments == N) || (M < N && assignments == M) {
 				break
 			}
 
@@ -384,7 +390,7 @@ func hungarian_method(costs [][]int) (int, error) {
 			// find minimum uncovered value
 			min_uncovered := 10000000
 			for i := 0; i < N; i++ {
-				for j := 0; j < N; j++ {
+				for j := 0; j < M; j++ {
 					if covered_agents[i] == 0 && covered_tasks[j] == 0 {
 						if costs[i][j] < min_uncovered {
 							min_uncovered = costs[i][j]
@@ -394,7 +400,7 @@ func hungarian_method(costs [][]int) (int, error) {
 			}
 			// add minimum uncovered value to coverings interserctions and substract it from uncovered values
 			for i := 0; i < N; i++ {
-				for j := 0; j < N; j++ {
+				for j := 0; j < M; j++ {
 					if covered_agents[i] == 1 && covered_tasks[j] == 1 {
 						costs[i][j] += min_uncovered
 					} else if covered_agents[i] == 0 && covered_tasks[j] == 0 {
@@ -404,13 +410,13 @@ func hungarian_method(costs [][]int) (int, error) {
 			}
 
 			step++
-			clean_all(&stars, &primes, &covered_agents, &covered_tasks, N)
+			clean_all(&stars, &primes, &covered_agents, &covered_tasks, N, M)
 			// search assignments
-			assignments = find_assignments(&costs, &stars, N)
+			assignments = find_assignments(&costs, &stars, N, M)
 			if DEBUG {
-				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N)
+				debug_array(step, costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
 			}
-			if assignments == N {
+			if (N <= M && assignments == N) || (M < N && assignments == M) {
 				break
 			} else {
 				step -= 2
@@ -418,13 +424,13 @@ func hungarian_method(costs [][]int) (int, error) {
 		}
 	}
 
-	return teardown(search_start, step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N), nil
+	return teardown(search_start, step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M), nil
 }
 
 func main() {
 
 	// input costs array: Agents \ Tasks, must be squared
-	costs := [][]int{
+	/*costs := [][]int{
 		{1, 3, 3, 6, 4, 99, 5, 9, 7},
 		{2, 4, 4, 5, 7, 5, 6, 6, 8},
 		{2, 4, 4, 5, 7, 5, 6, 6, 8},
@@ -435,6 +441,18 @@ func main() {
 		{5, 99, 7, 8, 99, 99, 99, 99, 99},
 		{6, 99, 8, 7, 99, 99, 99, 99, 99},
 	}
+	costs := [][]int{
+		{4, 6, 3, 8},
+		{7, 5, 12, 6},
+		{3, 6, 9, 2},
+		{1000, 5, 7, 4},
+	}*/
+
+	costs := [][]int{
+		{7, 5, 11},
+		{5, 4, 1},
+	}
+
 
 	_, err := hungarian_method(costs)
 	if err != nil {
