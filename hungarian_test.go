@@ -4,47 +4,6 @@ import (
 	"testing"
 )
 
-func TestUnsquared0(t *testing.T) {
-	costs := [][]int{
-		{7, 5, 11},
-		{5, 4, 1},
-	}
-	cost := 6
-	res, err := hungarian_method(costs)
-	if cost != res || err != nil {
-		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
-	}
-}
-
-func TestUnsquared1(t *testing.T) {
-	costs := [][]int{
-		{94, 98, 95, 85},
-		{8, 2, 4, 2},
-		{97, 12, 54, 2},
-		{1, 5, 2, 8},
-		{16, 20, 2, 30},
-	}
-	cost := 7
-	res, err := hungarian_method(costs)
-	if cost != res || err != nil {
-		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
-	}
-}
-
-func TestUnsquared2(t *testing.T) {
-	costs := [][]int{
-		{97, 98, 95, 85},
-		{3, 2, 4, 2},
-		{97, 98, 6, 92},
-		{100, 8, 2, 6, 12},
-	}
-	cost := 102
-	res, err := hungarian_method(costs)
-	if cost != res || err != nil {
-		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
-	}
-}
-
 func TestEasy(t *testing.T) {
 	costs := [][]int{
 		{0, 98, 95, 85},
@@ -125,6 +84,62 @@ func TestHard2(t *testing.T) {
 		{6, 99, 8, 7, 99, 99, 99, 99, 99},
 	}
 	cost := 142
+	res, err := hungarian_method(costs)
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
+	}
+}
+
+func TestUnsquared(t *testing.T) {
+	costs := [][]int{
+		{7, 5, 11},
+		{5, 4, 1},
+	}
+	cost := 6
+	res, err := hungarian_method(costs)
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
+	}
+}
+
+func TestUnsquared2(t *testing.T) {
+	costs := [][]int{
+		{94, 98, 95, 85},
+		{8, 2, 4, 2},
+		{97, 12, 54, 2},
+		{1, 5, 2, 8},
+		{16, 20, 2, 30},
+	}
+	cost := 7
+	res, err := hungarian_method(costs)
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
+	}
+}
+
+func TestUnsquared3(t *testing.T) {
+	costs := [][]int{
+		{97, 98, 95, 85},
+		{3, 2, 4, 2},
+		{97, 98, 6, 92},
+		{100, 8, 2, 6, 12},
+	}
+	cost := 102
+	res, err := hungarian_method(costs)
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
+	}
+}
+
+func TestUnsquared4(t *testing.T) {
+	costs := [][]int{
+		{18, 11, 16, 20},
+		{14, 19, 26, 18},
+		{21, 23, 35, 29},
+		{32, 27, 21, 17},
+		{16, 15, 28, 25},
+	}
+	cost := 62
 	res, err := hungarian_method(costs)
 	if cost != res || err != nil {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
