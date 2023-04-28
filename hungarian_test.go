@@ -4,30 +4,44 @@ import (
 	"testing"
 )
 
-func TestUnsquared(t *testing.T) {
+func TestUnsquared0(t *testing.T) {
 	costs := [][]int{
-		{0, 98, 95, 85},
-		{0, 2, 4, 2},
-		{97, 0, 0, 2},
-		{0, 0, 2, 0},
-		{0, 0, 2, 0},
+		{7, 5, 11},
+		{5, 4, 1},
 	}
-	_, err := hungarian_method(costs)
-	if err == nil {
-		t.Fatalf("want %s\n", err)
+	cost := 6
+	res, err := hungarian_method(costs)
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
+	}
+}
+
+func TestUnsquared1(t *testing.T) {
+	costs := [][]int{
+		{94, 98, 95, 85},
+		{8, 2, 4, 2},
+		{97, 12, 54, 2},
+		{1, 5, 2, 8},
+		{16, 20, 2, 30},
+	}
+	cost := 7
+	res, err := hungarian_method(costs)
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
 }
 
 func TestUnsquared2(t *testing.T) {
 	costs := [][]int{
-		{0, 98, 95, 85},
-		{0, 2, 4, 2},
-		{97, 0, 0, 2},
-		{0, 0, 2, 0, 0},
+		{97, 98, 95, 85},
+		{3, 2, 4, 2},
+		{97, 98, 6, 92},
+		{100, 8, 2, 6, 12},
 	}
-	_, err := hungarian_method(costs)
-	if err == nil {
-		t.Fatalf("want %s\n", err)
+	cost := 102
+	res, err := hungarian_method(costs)
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
 }
 

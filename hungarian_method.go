@@ -7,12 +7,12 @@ import (
 	"time"
 )
 
-const DEBUG = true
+const DEBUG = false
 
-func show_assignments(costs, stars [][]int, N int) int {
+func show_assignments(costs, stars [][]int, N, M int) int {
 	total_cost := 0
 	for i := 0; i < N; i++ {
-		for j := 0; j < N; j++ {
+		for j := 0; j < M; j++ {
 			if stars[i][j] == 1 {
 				total_cost += costs[i][j]
 				fmt.Printf("Agent %d -> Task %d : cost %d\n", i, j, costs[i][j])
@@ -193,10 +193,10 @@ func teardown(search_start time.Time, step int, original_costs, stars, primes []
 
 	if N <= M && assignments == N {
 		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
-		total_cost = show_assignments(original_costs, stars, N)
+		total_cost = show_assignments(original_costs, stars, N, M)
 	} else if (M < N && assignments == M) {
 		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
-		total_cost = show_assignments(original_costs, stars, N)
+		total_cost = show_assignments(original_costs, stars, N, M)
 	}
 	fmt.Printf("\nElapsed time: %d us\n", elapsed)
 	return total_cost
@@ -285,7 +285,7 @@ func hungarian_method(costs [][]int) (int, error) {
 			}
 		}
 	}
-	
+
 	step++
 	// find perfect assignments
 	assignments = find_assignments(&costs, &stars, N, M)
@@ -449,8 +449,10 @@ func main() {
 	}*/
 
 	costs := [][]int{
-		{7, 5, 11},
-		{5, 4, 1},
+		{97, 98, 95, 85},
+		{3, 2, 4, 2},
+		{97, 98, 6, 92},
+		{100, 8, 2, 6, 12},
 	}
 
 
