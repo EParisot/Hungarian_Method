@@ -6,6 +6,8 @@ The Hungarian method is a combinatorial optimization algorithm that solves the a
 
 [YouTube lesson](https://www.youtube.com/watch?v=ezSx8OyBZVc)
 
+[An Extension of the Munkres Algorithm for the Assignment Problem to Rectangular Matrices Franqois Bourgeois and Jean-Claude Lassalle](https://dl.acm.org/doi/pdf/10.1145/362919.362945)
+
 ### Run
 Edit hungarian_method.go main to specify you input matrix
 ```
