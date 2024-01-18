@@ -176,3 +176,17 @@ func TestUnsquared6(t *testing.T) {
 		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
 	}
 }
+
+func TestUnsquared7(t *testing.T) {
+	costs := [][]int{
+		{12, 22, 6, 10, 10},
+		{22, 24, 16, 18, 10},
+		{18, 38, 26, 30, 10},
+		{18, 38, 26, 30, 10},
+	}
+	cost := 52
+	res, err := hungarian_method(costs, "minimise")
+	if cost != res || err != nil {
+		t.Fatalf("%s, want %d, got %d\n", err, cost, res)
+	}
+}

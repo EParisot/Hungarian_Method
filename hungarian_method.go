@@ -51,7 +51,7 @@ func debug_array(step int, costs, stars, primes [][]int, covered_agents, covered
 		fmt.Printf("\n")
 	}
 	fmt.Printf("\n\t")
-	for j := 0; j < N; j++ {
+	for j := 0; j < M; j++ {
 		if covered_tasks[j] == 1 {
 			fmt.Printf("   x    ")
 		} else {
@@ -74,9 +74,9 @@ func clean_all(stars, primes *[][]int, covered_agents, covered_tasks *[]int, N, 
 		for j := 0; j < M; j++ {
 			(*stars)[i][j] = 0
 			(*primes)[i][j] = 0
+			(*covered_tasks)[j] = 0
 		}
 		(*covered_agents)[i] = 0
-		(*covered_tasks)[i] = 0
 	}
 }
 
@@ -195,7 +195,7 @@ func teardown(search_start time.Time, step int, original_costs, stars, primes []
 	if N <= M && assignments == N {
 		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
 		total_cost = show_assignments(original_costs, stars, N, M)
-	} else if (M < N && assignments == M) {
+	} else if M < N && assignments == M {
 		debug_array(step, original_costs, stars, primes, covered_agents, covered_tasks, assignments, N, M)
 		total_cost = show_assignments(original_costs, stars, N, M)
 	}
@@ -230,7 +230,7 @@ func hungarian_method(costs [][]int, objective string) (int, error) {
 		}
 		for i := 0; i < N; i++ {
 			for j := 0; j < M; j++ {
-				costs[i][j] = max_cost - costs[i][j];
+				costs[i][j] = max_cost - costs[i][j]
 			}
 		}
 	}
@@ -247,10 +247,12 @@ func hungarian_method(costs [][]int, objective string) (int, error) {
 		}
 	}
 	covered_agents := make([]int, N)
-	covered_tasks := make([]int, N)
 	for i := 0; i < N; i++ {
 		covered_agents[i] = 0
-		covered_tasks[i] = 0
+	}
+	covered_tasks := make([]int, M)
+	for j := 0; j < M; j++ {
+		covered_tasks[j] = 0
 	}
 
 	// debug cost array
@@ -463,11 +465,19 @@ func main() {
 		{6, 99, 8, 7, 99, 99, 99, 99, 99},
 	}*/
 
-	costs := [][]int{
+	/*costs := [][]int{
 		{4, 6, 3, 8},
 		{7, 5, 12, 6},
 		{3, 6, 9, 2},
 		{1000, 5, 7, 4},
+	}*/
+
+	costs := [][]int{
+		{18, 11, 16, 20},
+		{14, 19, 26, 18},
+		{21, 23, 35, 29},
+		{32, 27, 21, 17},
+		{16, 15, 28, 25},
 	}
 
 	_, err := hungarian_method(costs, *objective)
